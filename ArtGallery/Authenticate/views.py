@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .serializers import RegisterSerializer
-from .models import Painting  # ← THÊM DÒNG NÀY
+from .models import Painting
 from django.contrib.auth import authenticate
 
 
@@ -20,9 +20,7 @@ class RegisterView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             
-            # ========================================
-            # TẠO 10 KHUNG TRANH MẶC ĐỊNH
-            # ========================================
+            # Tạo 10 khung tranh mặc định
             print(f"🎨 Creating 10 frames for user: {user.username}")
             for i in range(1, 11):
                 painting = Painting.objects.create(
@@ -35,7 +33,6 @@ class RegisterView(APIView):
                 )
                 print(f"   ✅ Created Frame {i} (ID: {painting.id})")
             print(f"🎉 Successfully created 10 frames for user: {user.username}")
-            # ========================================
             
             return Response(
                 {
@@ -48,7 +45,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 2) LOGIN → return access + refresh token
+# 2) LOGIN → return access + refresh token + USER DATA
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -68,6 +65,11 @@ class LoginView(APIView):
                 "accessToken": str(refresh.access_token),
                 "refreshToken": str(refresh),
                 "expiresIn": 3600,
+                "user": {  # ✅ THÊM USER DATA
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email
+                }
             },
             status=200
         )
@@ -75,7 +77,7 @@ class LoginView(APIView):
 
 # 3) REFRESH TOKEN
 class RefreshTokenView(TokenRefreshView):
-    pass   # DRF SimpleJWT lo hết rồi
+    pass
 
 
 # 4) LOGOUT → revoke refresh token
