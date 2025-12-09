@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .serializers import RegisterSerializer
+from .models import Painting  # ← THÊM DÒNG NÀY
 from django.contrib.auth import authenticate
 
 
@@ -18,6 +19,24 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            
+            # ========================================
+            # TẠO 10 KHUNG TRANH MẶC ĐỊNH
+            # ========================================
+            print(f"🎨 Creating 10 frames for user: {user.username}")
+            for i in range(1, 11):
+                painting = Painting.objects.create(
+                    owner=user,
+                    frame_number=i,
+                    title=f'Frame {i}',
+                    description='',
+                    visibility='private',
+                    has_image=False
+                )
+                print(f"   ✅ Created Frame {i} (ID: {painting.id})")
+            print(f"🎉 Successfully created 10 frames for user: {user.username}")
+            # ========================================
+            
             return Response(
                 {
                     "id": user.id,
