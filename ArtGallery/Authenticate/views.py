@@ -2,6 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -9,6 +11,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .serializers import RegisterSerializer
 from .models import Painting
 from django.contrib.auth import authenticate
+from django.utils import timezone
 
 
 # 1) REGISTER
@@ -94,3 +97,16 @@ class LogoutView(APIView):
 
         except Exception:
             return Response({"message": "Invalid token"}, status=400)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request):
+    """
+    Simple health check endpoint for keep-alive services
+    """
+    return Response({
+        "status": "ok",
+        "timestamp": timezone.now().isoformat(),
+        "message": "Server is running"
+    })
